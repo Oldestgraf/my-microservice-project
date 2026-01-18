@@ -5,7 +5,7 @@ echo "Installing Dev Tools"
 
 # Docker
 if command -v docker >/dev/null 2>&1; then
-  echo "Docker already installed"
+  echo "Docker already installed: $(docker --version)"
 else
   echo "Installing Docker..."
   sudo apt update
@@ -16,7 +16,7 @@ fi
 
 # Docker Compose
 if docker compose version >/dev/null 2>&1; then
-  echo "Docker Compose already installed"
+  echo "Docker Compose already installed: $(docker compose version)"
 else
   echo "Installing Docker Compose..."
   sudo apt update
@@ -36,7 +36,7 @@ fi
 
 # Django
 if python3 -c "import django" >/dev/null 2>&1; then
-  echo "Django already installed"
+  echo "Django already installed: $(python3 -m django --version)"
 else
   echo "Installing Django..."
   pip3 install --user django
@@ -44,8 +44,3 @@ else
 fi
 
 echo "Done"
-echo "Check:"
-echo "docker --version"
-echo "docker compose version"
-echo "python3 --version"
-echo "python3 -m django --version"
