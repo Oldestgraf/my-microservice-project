@@ -1,0 +1,33 @@
+replicaCount: 2
+
+image:
+  repository: "639747620745.dkr.ecr.us-west-2.amazonaws.com/lesson-7-django"
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8000
+
+config:
+  DEBUG: "1"
+  DB_NAME: "postgres"
+  DB_USER: "postgres"
+  DB_PASSWORD: "postgres"
+  DB_HOST: "db"
+  DB_PORT: "5432"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
