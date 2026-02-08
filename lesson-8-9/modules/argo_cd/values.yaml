@@ -1,0 +1,3 @@
+server:
+  service:
+    type: ${server_service_type}

@@ -1,0 +1,2 @@
+# Repo credentials are not required if the repository is PUBLIC.
+# If your repo is PRIVATE, add repo credentials in Argo CD (UI) or via Kubernetes Secret.
