@@ -12,7 +12,7 @@ variable "eks_cluster_name" {
 variable "ecr_repo_name" {
   type = string
   description = "ECR repository name for Django image"
-  default = "lesson-8-django"
+  default = "lesson-8-9-django"
 }
 
 variable "app_repo_url" {

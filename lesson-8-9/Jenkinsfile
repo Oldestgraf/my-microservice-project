@@ -1,0 +1,112 @@
+pipeline {
+    agent {
+        kubernetes {
+            label 'kaniko-builder'
+            yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: kaniko
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+    - name: docker-config
+      mountPath: /kaniko/.docker
+  - name: git
+    image: alpine/git:latest
+    command:
+    - cat
+    tty: true
+  volumes:
+  - name: docker-config
+    secret:
+      secretName: ecr-credentials
+"""
+        }
+    }
+
+    environment {
+        ECR_REGISTRY = '639747620745.dkr.ecr.us-west-2.amazonaws.com'
+        ECR_REPOSITORY = 'lesson-8-9-django'
+        AWS_REGION = 'us-west-2'
+        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        GIT_CREDENTIALS_ID = 'github-credentials'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build and Push Image') {
+            steps {
+                container('kaniko') {
+                    sh """
+                        /kaniko/executor \
+                        --context=${WORKSPACE}/lesson-4-django-docker \
+                        --dockerfile=${WORKSPACE}/lesson-4-django-docker/Dockerfile \
+                        --destination=${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} \
+                        --destination=${ECR_REGISTRY}/${ECR_REPOSITORY}:latest \
+                        --cache=true \
+                        --cache-ttl=24h
+                    """
+                }
+            }
+        }
+
+        stage('Update Helm Chart Tag') {
+            steps {
+                container('git') {
+                    script {
+                        sh """
+                            apk add --no-cache yq
+                            cd ${WORKSPACE}/lesson-8-9/charts/django-app
+                            yq eval '.image.tag = "${IMAGE_TAG}"' -i values.yaml
+                            cat values.yaml
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Commit and Push Changes') {
+            steps {
+                container('git') {
+                    script {
+                        withCredentials([usernamePassword(
+                            credentialsId: "${GIT_CREDENTIALS_ID}",
+                            usernameVariable: 'GIT_USERNAME',
+                            passwordVariable: 'GIT_PASSWORD'
+                        )]) {
+                            sh """
+                                cd ${WORKSPACE}
+                                git config user.email "jenkins@ci.local"
+                                git config user.name "Jenkins CI"
+                                git add lesson-8-9/charts/django-app/values.yaml
+                                git commit -m "Update django-app image tag to ${IMAGE_TAG}"
+                                git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/YOUR_USERNAME/YOUR_REPO.git HEAD:${env.BRANCH_NAME}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline completed successfully! Image ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG} built and pushed."
+        }
+        failure {
+            echo "Pipeline failed. Check logs for details."
+        }
+    }
+}
