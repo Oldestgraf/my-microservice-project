@@ -143,7 +143,7 @@ environment {
 
 А також в stage 'Commit and Push Changes':
 ```groovy
-git push https//${GIT_USERNAME}:${GIT_PASSWORD}@github.com/YOUR_USERNAME/YOUR_REPO.git
+git push https://${GIT_USERNAME}:${GIT_PASSWORD}@github.com/YOUR_USERNAME/YOUR_REPO.git
 ```
 
 Детальніше: [JENKINS_SETUP.md](./JENKINS_SETUP.md)
