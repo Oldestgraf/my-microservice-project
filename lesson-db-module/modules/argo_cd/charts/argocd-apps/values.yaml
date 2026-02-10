@@ -1,0 +1,9 @@
+applications:
+  - name: ${app_name}
+    project: default
+    repoURL: ${repo_url}
+    targetRevision: ${target_revision}
+    path: ${chart_path}
+    destinationNamespace: ${destination_namespace}
+    destinationServer: https://kubernetes.default.svc
+    automated: true

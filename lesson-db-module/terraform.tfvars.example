@@ -1,0 +1,54 @@
+# Приклад terraform.tfvars
+
+# Загальні налаштування
+aws_region   = "us-east-1"
+project_name = "rds-homework"
+environment  = "dev"
+
+# S3 Backend (ВАЖЛИВО: назва bucket має бути унікальною глобально!)
+terraform_state_bucket     = "my-terraform-state-bucket-unique-12345"
+terraform_state_lock_table = "terraform-state-lock"
+
+# VPC налаштування
+vpc_cidr               = "10.0.0.0/16"
+public_subnet_cidrs    = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+private_subnet_cidrs   = ["10.0.11.0/24", "10.0.12.0/24", "10.0.13.0/24"]
+database_subnet_cidrs  = ["10.0.21.0/24", "10.0.22.0/24", "10.0.23.0/24"]
+
+enable_nat_gateway = true
+single_nat_gateway = true  # true = дешевше, false = більш надійно
+
+# RDS налаштування
+
+# ВАРІАНТ 1: PostgreSQL RDS (для development)
+use_aurora              = false
+db_engine               = "postgres"
+db_engine_version       = "16.1"
+db_instance_class       = "db.t3.micro"
+db_allocated_storage    = 20
+db_storage_type         = "gp3"
+db_multi_az             = false
+db_skip_final_snapshot  = true      # true для dev, false для prod!
+db_deletion_protection  = false     # false для dev, true для prod!
+
+# ВАРІАНТ 2: Aurora PostgreSQL Cluster (для production)
+# use_aurora               = true
+# db_engine                = "aurora-postgresql"
+# db_engine_version        = "16.1"
+# db_instance_class        = "db.t3.medium"
+# aurora_cluster_instances = 2
+# db_multi_az              = true
+# db_skip_final_snapshot   = false
+# db_deletion_protection   = true
+
+# Креденшели БД (НІКОЛИ не комітьте це в git!)
+db_name            = "mydb"
+db_master_username = "admin"
+db_master_password = "ChangeMe123!"  # ЗМІНІТЬ НА БЕЗПЕЧНИЙ ПАРОЛЬ!
+
+# Додаткові налаштування БД
+db_publicly_accessible          = false
+db_storage_encrypted            = true
+db_backup_retention_period      = 7
+db_performance_insights_enabled = false
+db_cloudwatch_logs_exports      = []  # ["postgresql"] для Postgres або ["error", "general", "slowquery"] для MySQL
